@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LeadDesk - Gestione Lead</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Navigazione">
+        <div class="brand">
+          <span class="brand-mark">L</span>
+          <div>
+            <strong>LeadDesk</strong>
+            <small>Meta lead inbox</small>
+          </div>
+        </div>
+        <nav>
+          <a class="active" href="./index.html">Dashboard</a>
+          <a href="./settings.html">Configurazione</a>
+        </nav>
+        <div class="sync-card">
+          <span class="sync-dot" id="syncDot"></span>
+          <div>
+            <strong id="syncLabel">Locale</strong>
+            <small id="syncHelp">Configura l'endpoint Apps Script</small>
+          </div>
+        </div>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <div>
+            <h1>Ultimi lead</h1>
+            <p>Rispondi su WhatsApp, aggiorna stato e note sul Google Sheet.</p>
+          </div>
+          <button class="primary" id="refreshBtn" type="button">Aggiorna</button>
+        </header>
+
+        <section class="metrics" aria-label="Riepilogo lead">
+          <article>
+            <span id="metricNewLabel">Nuovi</span>
+            <strong id="metricNew">0</strong>
+          </article>
+          <article>
+            <span id="metricContactLabel">Contattati</span>
+            <strong id="metricContact">0</strong>
+          </article>
+          <article>
+            <span id="metricMeetingLabel">Appuntamenti</span>
+            <strong id="metricMeeting">0</strong>
+          </article>
+          <article>
+            <span id="metricClosedLabel">Chiusi</span>
+            <strong id="metricClosed">0</strong>
+          </article>
+        </section>
+
+        <section class="toolbar" aria-label="Filtri lead">
+          <label>
+            <span>Cerca</span>
+            <input id="searchInput" type="search" placeholder="Nome, telefono, campagna..." />
+          </label>
+          <label>
+            <span>Stato</span>
+            <select id="statusFilter"></select>
+          </label>
+        </section>
+
+        <section class="workspace" id="dashboard">
+          <div class="lead-list" id="leadList" aria-label="Lista lead"></div>
+        </section>
+      </main>
+    </div>
+
+    <template id="leadCardTemplate">
+      <article class="lead-card">
+        <button class="lead-summary" type="button">
+          <span class="lead-status"></span>
+          <span>
+            <strong class="lead-name"></strong>
+            <small class="lead-meta"></small>
+          </span>
+          <span class="lead-campaign"></span>
+          <span class="expand-icon">+</span>
+        </button>
+        <div class="lead-expanded"></div>
+      </article>
+    </template>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

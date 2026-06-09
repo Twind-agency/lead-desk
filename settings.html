@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LeadDesk - Configurazione</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Navigazione">
+        <div class="brand">
+          <span class="brand-mark">L</span>
+          <div>
+            <strong>LeadDesk</strong>
+            <small>Meta lead inbox</small>
+          </div>
+        </div>
+        <nav>
+          <a href="./index.html">Dashboard</a>
+          <a class="active" href="./settings.html">Configurazione</a>
+        </nav>
+        <div class="sync-card">
+          <span class="sync-dot" id="syncDot"></span>
+          <div>
+            <strong id="syncLabel">Locale</strong>
+            <small id="syncHelp">Configura l'endpoint Apps Script</small>
+          </div>
+        </div>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <div>
+            <h1>Configurazione</h1>
+            <p>Collega Google Sheet, personalizza stati e messaggi WhatsApp.</p>
+          </div>
+          <a class="secondary button-link" href="./index.html">Torna alla dashboard</a>
+        </header>
+
+        <section class="settings">
+          <div>
+            <h2>Google Sheet e pipeline</h2>
+            <p>L'endpoint Apps Script legge i lead ricevuti da Meta, aggiorna stato e note, e mantiene il foglio riepilogo `Pipeline`.</p>
+          </div>
+          <form id="settingsForm">
+            <label>
+              <span>Endpoint Apps Script</span>
+              <input id="endpointInput" type="url" placeholder="https://script.google.com/macros/s/..." />
+            </label>
+            <label>
+              <span>Primo messaggio WhatsApp</span>
+              <textarea id="firstMessageTemplate" rows="3"></textarea>
+            </label>
+            <label>
+              <span>Messaggio follow-up WhatsApp</span>
+              <textarea id="followUpMessageTemplate" rows="3"></textarea>
+            </label>
+            <label>
+              <span>Stati lead, uno per riga</span>
+              <textarea id="statusNames" rows="6"></textarea>
+            </label>
+            <div class="save-row">
+              <button class="primary" type="submit">Salva configurazione</button>
+              <span class="notice" id="settingsNotice">Pronto</span>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <script src="./settings.js"></script>
+  </body>
+</html>
