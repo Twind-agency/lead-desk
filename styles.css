@@ -167,6 +167,27 @@ p {
   background: var(--accent-dark);
 }
 
+.whatsapp {
+  background: #25d366;
+  color: #062c18;
+}
+
+.whatsapp:hover {
+  background: #1ebe5d;
+}
+
+.wa-icon {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  display: inline-flex;
+  font-size: 13px;
+  height: 20px;
+  justify-content: center;
+  margin-right: 8px;
+  width: 20px;
+}
+
 .secondary {
   background: #e5ebe7;
   color: var(--ink);

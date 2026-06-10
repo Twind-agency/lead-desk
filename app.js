@@ -281,6 +281,7 @@ function renderList() {
     node.querySelector(".lead-campaign").textContent = lead.campaign;
     expandButton.textContent = lead.id === selectedId ? "-" : "+";
     quickWhatsapp.href = buildWhatsappUrl(lead);
+    quickWhatsapp.innerHTML = `<span class="wa-icon" aria-hidden="true">☎</span>${Number(lead.whatsappCount || 0) > 0 ? "Riscrivi su WhatsApp" : "Scrivi su WhatsApp"}`;
     quickStatus.innerHTML = settings.statuses
       .map((status) => `<option value="${escapeHtml(status)}" ${status === lead.status ? "selected" : ""}>${escapeHtml(status)}</option>`)
       .join("");
