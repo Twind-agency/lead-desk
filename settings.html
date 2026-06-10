@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>LeadDesk - Configurazione</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=20260610-dynamicfields" />
   </head>
   <body>
     <div class="app-shell">
@@ -60,6 +60,14 @@
               <span>Stati lead, uno per riga</span>
               <textarea id="statusNames" rows="6"></textarea>
             </label>
+            <label>
+              <span>Campi dinamici da mostrare, uno per riga</span>
+              <textarea id="dynamicFields" rows="6" placeholder="nome_colonna | Etichetta visibile"></textarea>
+            </label>
+            <div class="save-row">
+              <button class="secondary" id="detectFieldsBtn" type="button">Rileva campi dal foglio</button>
+              <span class="notice" id="detectNotice">Opzionale</span>
+            </div>
             <div class="save-row">
               <button class="primary" type="submit">Salva configurazione</button>
               <span class="notice" id="settingsNotice">Pronto</span>
@@ -69,6 +77,6 @@
       </main>
     </div>
 
-    <script src="./settings.js"></script>
+    <script src="./settings.js?v=20260610-dynamicfields"></script>
   </body>
 </html>

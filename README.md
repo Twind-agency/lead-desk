@@ -51,3 +51,15 @@ I testi possono essere modificati nella sezione `Google Sheet`, insieme ai nomi 
 - `{{nome}}`
 - `{{campagna}}`
 - `{{interesse}}`
+
+## Campi dinamici del form Meta
+
+Nella pagina `Configurazione` puoi indicare quali colonne extra del Google Sheet mostrare nella scheda lead. Usa una riga per campo:
+
+`nome_colonna | Etichetta visibile`
+
+Esempio:
+
+`budget | Budget indicato`
+
+Puoi anche usare `Rileva campi dal foglio` dopo l'arrivo dei primi lead per far proporre automaticamente le colonne extra trovate.

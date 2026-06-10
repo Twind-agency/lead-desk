@@ -96,6 +96,7 @@ let selectedId = state.leads[0]?.id || null;
 let refreshTimer = null;
 let autosaveTimers = {};
 let activeEditUntil = 0;
+let pendingUpdates = {};
 
 function loadState() {
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -116,6 +117,7 @@ function loadSettings() {
     firstTemplate: defaultFirstTemplate,
     followUpTemplate: defaultFollowUpTemplate,
     statuses: defaultStatuses,
+    dynamicFields: [],
   };
 
   if (!saved) return defaults;
@@ -128,10 +130,30 @@ function loadSettings() {
       firstTemplate: parsed.firstTemplate || parsed.template || defaultFirstTemplate,
       followUpTemplate: parsed.followUpTemplate || defaultFollowUpTemplate,
       statuses: normalizeStatuses(parsed.statuses),
+      dynamicFields: normalizeDynamicFields(parsed.dynamicFields),
     };
   } catch {
     return defaults;
   }
+}
+
+function normalizeDynamicFields(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map((field) => ({
+        key: String(field.key || "").trim(),
+        label: String(field.label || field.key || "").trim(),
+      }))
+      .filter((field) => field.key);
+  }
+
+  return String(value || "")
+    .split(/\n/)
+    .map((line) => {
+      const parts = line.split("|").map((part) => part.trim());
+      return { key: parts[0] || "", label: parts[1] || parts[0] || "" };
+    })
+    .filter((field) => field.key);
 }
 
 function normalizeStatuses(value) {
@@ -282,6 +304,8 @@ function renderExpanded(lead) {
       ${field("Arrivato", formatDate(lead.createdAt))}
     </div>
 
+    ${renderDynamicFields(lead)}
+
     <div class="inline-form">
       <label>
         <span>Stato lead</span>
@@ -309,6 +333,40 @@ function renderExpanded(lead) {
       <a class="whatsapp" data-role="whatsapp" href="${whatsappUrl}" target="_blank" rel="noopener">Scrivi su WhatsApp</a>
       <span class="notice" data-role="notice">Salvataggio automatico attivo</span>
     </div>`;
+}
+
+function renderDynamicFields(lead) {
+  const fields = normalizeDynamicFields(settings.dynamicFields);
+  if (!fields.length) return "";
+
+  const rows = fields
+    .map((fieldConfig) => {
+      const value = getDynamicValue(lead, fieldConfig.key);
+      if (value === "") return "";
+      return field(fieldConfig.label || fieldConfig.key, value);
+    })
+    .filter(Boolean)
+    .join("");
+
+  if (!rows) return "";
+
+  return `
+    <section class="dynamic-fields" aria-label="Risposte form">
+      <h3>Risposte form</h3>
+      <div class="detail-grid">${rows}</div>
+    </section>`;
+}
+
+function getDynamicValue(lead, key) {
+  const raw = lead._raw || {};
+  const direct = raw[key] ?? lead[key];
+  if (direct !== undefined && direct !== null && direct !== "") return direct;
+
+  const normalizedKey = String(key || "").trim().toLowerCase();
+  const rawKey = Object.keys(raw).find((item) => String(item).trim().toLowerCase() === normalizedKey);
+  if (rawKey && raw[rawKey] !== undefined && raw[rawKey] !== null) return raw[rawKey];
+
+  return "";
 }
 
 function attachExpandedEvents(container, id) {
@@ -422,12 +480,14 @@ async function saveLead(id, container, successMessage) {
 
   if (settings.endpoint) {
     try {
-      await fetch(settings.endpoint, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: "updateLead", lead }),
+      pendingUpdates[id] = { ...lead, pendingAt: Date.now() };
+      const params = new URLSearchParams({
+        action: "updateLead",
+        payload: JSON.stringify({ lead }),
       });
+      const response = await fetch(`${settings.endpoint}?${params.toString()}`);
+      const result = await response.json();
+      if (!result.ok) throw new Error(result.error || "Update failed");
       notice.textContent = "Inviato al Google Sheet";
     } catch (error) {
       notice.textContent = "Salvato localmente, invio non riuscito";
@@ -459,7 +519,7 @@ async function refreshLeads(silent = false) {
     const data = await response.json();
     if (Array.isArray(data.leads)) {
       const previousSelected = selectedId;
-      state.leads = data.leads.map((lead) => ({ whatsappCount: 0, ...lead }));
+      state.leads = mergePendingUpdates(data.leads.map((lead) => ({ whatsappCount: 0, ...lead })));
       selectedId = state.leads.some((lead) => lead.id === previousSelected) ? previousSelected : state.leads[0]?.id || null;
       persist();
     }
@@ -469,6 +529,27 @@ async function refreshLeads(silent = false) {
     if (!silent) els.refreshBtn.textContent = "Aggiorna";
     render();
   }
+}
+
+function mergePendingUpdates(sheetLeads) {
+  const now = Date.now();
+  return sheetLeads.map((sheetLead) => {
+    const pending = pendingUpdates[sheetLead.id];
+    if (!pending) return sheetLead;
+
+    const sheetMatchesPending = sheetLead.status === pending.status && String(sheetLead.notes || "") === String(pending.notes || "");
+    if (sheetMatchesPending) {
+      delete pendingUpdates[sheetLead.id];
+      return sheetLead;
+    }
+
+    if (now - pending.pendingAt < 30000) {
+      return { ...sheetLead, ...pending };
+    }
+
+    delete pendingUpdates[sheetLead.id];
+    return sheetLead;
+  });
 }
 
 function startRealtimeSync() {

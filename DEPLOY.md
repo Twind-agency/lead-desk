@@ -51,6 +51,16 @@ Lo script crea o aggiorna il foglio `Pipeline`, che contiene il riepilogo per st
 
 La dashboard salva automaticamente stato e note sul Google Sheet. Inoltre rilegge i lead dal Google Sheet ogni 15 secondi, sospendendo il refresh mentre stai modificando un lead.
 
+## Campi dinamici
+
+Prima del lancio della campagna puoi configurare i campi extra del form Meta dalla pagina `settings.html`.
+
+Formato consigliato:
+
+`nome_colonna | Etichetta visibile`
+
+Dopo che arriva almeno un lead puoi usare `Rileva campi dal foglio` per proporre automaticamente le colonne extra.
+
 ## Deploy su Netlify
 
 1. Vai su Netlify.
