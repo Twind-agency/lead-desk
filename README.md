@@ -6,7 +6,7 @@ Dashboard statica per gestire i lead che arrivano da Meta su Google Sheets.
 
 Apri `index.html` nel browser. Troverai i lead in schede espandibili: clicchi una scheda, cambi stato, aggiungi note e apri WhatsApp con un messaggio precompilato.
 
-Quando l'endpoint Apps Script e' configurato, stato e note vengono salvati automaticamente sul Google Sheet. La dashboard rilegge automaticamente il foglio ogni 15 secondi, ma sospende il refresh mentre stai modificando un lead.
+Quando l'endpoint Apps Script e' configurato, stato e note vengono salvati automaticamente sul Google Sheet. La dashboard aggiorna subito dopo ogni modifica fatta dall'app e controlla nuovi lead ogni 60 secondi.
 
 ## Collegamento a Google Sheets
 
@@ -63,3 +63,5 @@ Esempio:
 `budget | Budget indicato`
 
 Puoi anche usare `Rileva campi dal foglio` dopo l'arrivo dei primi lead per far proporre automaticamente le colonne extra trovate.
+
+Quando salvi la configurazione, l'app crea anche le colonne dinamiche mancanti nel foglio `Leads` e salva una copia della configurazione nel foglio `Config`.

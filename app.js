@@ -1,5 +1,6 @@
 const STORAGE_KEY = "leaddesk-state-v1";
 const SETTINGS_KEY = "leaddesk-settings-v1";
+const SYNC_INTERVAL_MS = 60000;
 
 const defaultStatuses = [
   "Nuovo",
@@ -218,7 +219,7 @@ function renderSync() {
   const connected = Boolean(settings.endpoint);
   els.syncDot.classList.toggle("online", connected);
   els.syncLabel.textContent = connected ? "Google Sheet" : "Locale";
-  els.syncHelp.textContent = connected ? "Autosave attivo, sync ogni 15 secondi" : "Configura l'endpoint Apps Script";
+  els.syncHelp.textContent = connected ? "Autosave attivo, controllo nuovi lead ogni 60 secondi" : "Configura l'endpoint Apps Script";
 }
 
 function renderFilters() {
@@ -489,6 +490,7 @@ async function saveLead(id, container, successMessage) {
       const result = await response.json();
       if (!result.ok) throw new Error(result.error || "Update failed");
       notice.textContent = "Inviato al Google Sheet";
+      window.setTimeout(() => refreshLeads(true), 500);
     } catch (error) {
       notice.textContent = "Salvato localmente, invio non riuscito";
     }
@@ -556,7 +558,7 @@ function startRealtimeSync() {
   if (refreshTimer) window.clearInterval(refreshTimer);
   if (!settings.endpoint) return;
   refreshLeads(true);
-  refreshTimer = window.setInterval(() => refreshLeads(true), 15000);
+  refreshTimer = window.setInterval(() => refreshLeads(true), SYNC_INTERVAL_MS);
 }
 
 els.searchInput.addEventListener("input", render);

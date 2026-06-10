@@ -49,7 +49,7 @@ Lo script crea o aggiorna il foglio `Pipeline`, che contiene il riepilogo per st
 5. Salva.
 6. Torna su `index.html`.
 
-La dashboard salva automaticamente stato e note sul Google Sheet. Inoltre rilegge i lead dal Google Sheet ogni 15 secondi, sospendendo il refresh mentre stai modificando un lead.
+La dashboard salva automaticamente stato e note sul Google Sheet. Dopo ogni modifica aggiorna subito la dashboard e controlla nuovi lead ogni 60 secondi.
 
 ## Campi dinamici
 
@@ -60,6 +60,8 @@ Formato consigliato:
 `nome_colonna | Etichetta visibile`
 
 Dopo che arriva almeno un lead puoi usare `Rileva campi dal foglio` per proporre automaticamente le colonne extra.
+
+Quando salvi la configurazione, Apps Script crea le colonne dinamiche mancanti nel foglio `Leads` e salva una copia della configurazione nel foglio `Config`.
 
 ## Deploy su Netlify
 

@@ -110,7 +110,7 @@ function render() {
   els.syncHelp.textContent = connected ? "Dashboard in sync automatico" : "Configura l'endpoint Apps Script";
 }
 
-els.settingsForm.addEventListener("submit", (event) => {
+els.settingsForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   settings = {
     endpoint: els.endpointInput.value.trim(),
@@ -129,8 +129,24 @@ els.settingsForm.addEventListener("submit", (event) => {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   els.settingsNotice.textContent = "Configurazione salvata";
+  await saveConfigToSheet(settings);
   render();
 });
+
+async function saveConfigToSheet(config) {
+  if (!config.endpoint) return;
+
+  els.settingsNotice.textContent = "Salvo anche su Google Sheet...";
+  try {
+    const payload = JSON.stringify({ config });
+    const params = new URLSearchParams({ action: "saveConfig", payload });
+    const response = await fetch(`${config.endpoint}?${params.toString()}`);
+    const result = await response.json();
+    els.settingsNotice.textContent = result.ok ? "Configurazione salvata su Google Sheet" : "Salvata localmente, Sheet non aggiornato";
+  } catch {
+    els.settingsNotice.textContent = "Salvata localmente, Sheet non aggiornato";
+  }
+}
 
 els.detectFieldsBtn.addEventListener("click", async () => {
   const endpoint = els.endpointInput.value.trim();
