@@ -239,7 +239,7 @@ textarea {
 .lead-card {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-left: 8px solid #0f766e;
+  border-left: 14px solid #0f766e;
   border-radius: 8px;
   color: var(--ink);
   overflow: hidden;
@@ -310,7 +310,7 @@ textarea {
 }
 
 .lead-card[data-status-tone="new"] {
-  background: #f4f8ff;
+  background: #eaf2ff;
   border-left-color: #3b82f6;
 }
 
@@ -320,7 +320,7 @@ textarea {
 }
 
 .lead-card[data-status-tone="todo"] {
-  background: #fffbeb;
+  background: #fff4cf;
   border-left-color: #f59e0b;
 }
 
@@ -330,7 +330,7 @@ textarea {
 }
 
 .lead-card[data-status-tone="contacted"] {
-  background: #f0fdf4;
+  background: #e3fbe9;
   border-left-color: #22c55e;
 }
 
@@ -340,7 +340,7 @@ textarea {
 }
 
 .lead-card[data-status-tone="meeting"] {
-  background: #f7f4ff;
+  background: #efe8ff;
   border-left-color: #8b5cf6;
 }
 
@@ -350,7 +350,7 @@ textarea {
 }
 
 .lead-card[data-status-tone="lost"] {
-  background: #fff5f5;
+  background: #ffe8e8;
   border-left-color: #ef4444;
 }
 
@@ -360,7 +360,7 @@ textarea {
 }
 
 .lead-card[data-status-tone="closed"] {
-  background: #f8fafc;
+  background: #edf2f7;
   border-left-color: #64748b;
 }
 
