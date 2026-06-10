@@ -94,6 +94,8 @@ let state = loadState();
 let settings = loadSettings();
 let selectedId = state.leads[0]?.id || null;
 let refreshTimer = null;
+let autosaveTimers = {};
+let activeEditUntil = 0;
 
 function loadState() {
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -194,7 +196,7 @@ function renderSync() {
   const connected = Boolean(settings.endpoint);
   els.syncDot.classList.toggle("online", connected);
   els.syncLabel.textContent = connected ? "Google Sheet" : "Locale";
-  els.syncHelp.textContent = connected ? "Sync automatico ogni 15 secondi" : "Configura l'endpoint Apps Script";
+  els.syncHelp.textContent = connected ? "Autosave attivo, sync ogni 15 secondi" : "Configura l'endpoint Apps Script";
 }
 
 function renderFilters() {
@@ -305,10 +307,7 @@ function renderExpanded(lead) {
 
     <div class="actions">
       <a class="whatsapp" data-role="whatsapp" href="${whatsappUrl}" target="_blank" rel="noopener">Scrivi su WhatsApp</a>
-      <div class="save-row">
-        <button class="secondary" data-role="save" type="button">Salva su Sheet</button>
-        <span class="notice" data-role="notice">Modifiche non salvate</span>
-      </div>
+      <span class="notice" data-role="notice">Salvataggio automatico attivo</span>
     </div>`;
 }
 
@@ -317,7 +316,6 @@ function attachExpandedEvents(container, id) {
   const notes = container.querySelector('[data-role="notes"]');
   const messageKind = container.querySelector('[data-role="message-kind"]');
   const whatsapp = container.querySelector('[data-role="whatsapp"]');
-  const saveButton = container.querySelector('[data-role="save"]');
   const notice = container.querySelector('[data-role="notice"]');
 
   const updateWhatsappHref = () => {
@@ -326,19 +324,35 @@ function attachExpandedEvents(container, id) {
   };
 
   status.addEventListener("change", () => {
-    notice.textContent = "Modifiche non salvate";
+    activeEditUntil = Date.now() + 4000;
+    notice.textContent = "Salvataggio...";
     const card = container.closest(".lead-card");
     const badge = card?.querySelector(".lead-status");
     if (card) card.dataset.statusTone = getStatusTone(status.value);
     if (badge) badge.textContent = status.value;
+    updateLocalLead(id, container);
+    renderMetrics();
     updateWhatsappHref();
+    scheduleAutosave(id, container, 150);
   });
   notes.addEventListener("input", () => {
-    notice.textContent = "Modifiche non salvate";
+    activeEditUntil = Date.now() + 4000;
+    notice.textContent = "Salvataggio...";
+    updateLocalLead(id, container);
+    scheduleAutosave(id, container, 900);
   });
   messageKind.addEventListener("change", updateWhatsappHref);
-  saveButton.addEventListener("click", () => saveLead(id, container, "Salvato localmente"));
-  whatsapp.addEventListener("click", () => markLeadContacted(id, container));
+  whatsapp.addEventListener("click", async (event) => {
+    event.preventDefault();
+    const url = whatsapp.href;
+    const popup = window.open("about:blank", "_blank", "noopener");
+    await markLeadContacted(id, container);
+    if (popup) {
+      popup.location.href = url;
+    } else {
+      window.location.href = url;
+    }
+  });
 }
 
 function readLeadDraft(id, container) {
@@ -349,6 +363,16 @@ function readLeadDraft(id, container) {
     status: container.querySelector('[data-role="status"]').value,
     notes: container.querySelector('[data-role="notes"]').value,
   };
+}
+
+function updateLocalLead(id, container) {
+  const draft = readLeadDraft(id, container);
+  if (!draft) return null;
+  const lead = state.leads.find((item) => item.id === id);
+  if (!lead) return null;
+  Object.assign(lead, draft, { updatedAt: new Date().toISOString() });
+  persist();
+  return lead;
 }
 
 function field(label, value) {
@@ -378,20 +402,21 @@ async function markLeadContacted(id, container) {
   const lead = state.leads.find((item) => item.id === id);
   const status = container.querySelector('[data-role="status"]');
   status.value = getContactedStatus();
+  activeEditUntil = Date.now() + 4000;
   if (lead) {
     lead.whatsappCount = Number(lead.whatsappCount || 0) + 1;
     persist();
   }
+  const card = container.closest(".lead-card");
+  const badge = card?.querySelector(".lead-status");
+  if (card) card.dataset.statusTone = getStatusTone(status.value);
+  if (badge) badge.textContent = status.value;
   await saveLead(id, container, "Lead segnato come contattato");
 }
 
 async function saveLead(id, container, successMessage) {
-  const draft = readLeadDraft(id, container);
-  if (!draft) return;
-  const lead = state.leads.find((item) => item.id === id);
-  Object.assign(lead, draft, { updatedAt: new Date().toISOString() });
-  persist();
-
+  const lead = updateLocalLead(id, container);
+  if (!lead) return;
   const notice = container.querySelector('[data-role="notice"]');
   notice.textContent = successMessage;
 
@@ -407,13 +432,18 @@ async function saveLead(id, container, successMessage) {
     } catch (error) {
       notice.textContent = "Salvato localmente, invio non riuscito";
     }
+  } else {
+    notice.textContent = "Salvato localmente";
   }
 
   renderMetrics();
-  renderList();
-  const freshCard = els.leadList.querySelector(`[data-id="${CSS.escape(id)}"]`);
-  const freshNotice = freshCard?.querySelector('[data-role="notice"]');
-  if (freshNotice) freshNotice.textContent = notice.textContent;
+}
+
+function scheduleAutosave(id, container, delay) {
+  window.clearTimeout(autosaveTimers[id]);
+  autosaveTimers[id] = window.setTimeout(() => {
+    saveLead(id, container, "Salvataggio automatico...");
+  }, delay);
 }
 
 async function refreshLeads(silent = false) {
@@ -421,6 +451,7 @@ async function refreshLeads(silent = false) {
     render();
     return;
   }
+  if (silent && Date.now() < activeEditUntil) return;
 
   if (!silent) els.refreshBtn.textContent = "Aggiorno...";
   try {

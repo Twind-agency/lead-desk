@@ -239,6 +239,7 @@ textarea {
 .lead-card {
   background: var(--panel);
   border: 1px solid var(--line);
+  border-left: 8px solid #0f766e;
   border-radius: 8px;
   color: var(--ink);
   overflow: hidden;
@@ -308,9 +309,19 @@ textarea {
   color: #1d4ed8;
 }
 
+.lead-card[data-status-tone="new"] {
+  background: #f4f8ff;
+  border-left-color: #3b82f6;
+}
+
 .lead-card[data-status-tone="todo"] .lead-status {
   background: #fef3c7;
   color: #92400e;
+}
+
+.lead-card[data-status-tone="todo"] {
+  background: #fffbeb;
+  border-left-color: #f59e0b;
 }
 
 .lead-card[data-status-tone="contacted"] .lead-status {
@@ -318,9 +329,19 @@ textarea {
   color: #166534;
 }
 
+.lead-card[data-status-tone="contacted"] {
+  background: #f0fdf4;
+  border-left-color: #22c55e;
+}
+
 .lead-card[data-status-tone="meeting"] .lead-status {
   background: #ede9fe;
   color: #6d28d9;
+}
+
+.lead-card[data-status-tone="meeting"] {
+  background: #f7f4ff;
+  border-left-color: #8b5cf6;
 }
 
 .lead-card[data-status-tone="lost"] .lead-status {
@@ -328,9 +349,19 @@ textarea {
   color: #991b1b;
 }
 
+.lead-card[data-status-tone="lost"] {
+  background: #fff5f5;
+  border-left-color: #ef4444;
+}
+
 .lead-card[data-status-tone="closed"] .lead-status {
   background: #e2e8f0;
   color: #334155;
+}
+
+.lead-card[data-status-tone="closed"] {
+  background: #f8fafc;
+  border-left-color: #64748b;
 }
 
 .lead-card strong {

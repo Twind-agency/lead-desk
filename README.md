@@ -6,7 +6,7 @@ Dashboard statica per gestire i lead che arrivano da Meta su Google Sheets.
 
 Apri `index.html` nel browser. Troverai i lead in schede espandibili: clicchi una scheda, cambi stato, aggiungi note e apri WhatsApp con un messaggio precompilato.
 
-Quando l'endpoint Apps Script e' configurato, la dashboard rilegge automaticamente il Google Sheet ogni 15 secondi.
+Quando l'endpoint Apps Script e' configurato, stato e note vengono salvati automaticamente sul Google Sheet. La dashboard rilegge automaticamente il foglio ogni 15 secondi, ma sospende il refresh mentre stai modificando un lead.
 
 ## Collegamento a Google Sheets
 
@@ -27,7 +27,7 @@ Lo script crea e aggiorna un foglio `Pipeline` con:
 - ultimo lead ricevuto per stato
 - riepilogo per campagna
 
-Puoi lanciare una volta la funzione `setupLeadDesk()` da Apps Script per creare subito la struttura. In seguito il riepilogo viene aggiornato quando la dashboard legge o aggiorna i lead.
+Puoi lanciare una volta la funzione `setupLeadDesk()` da Apps Script per creare subito la struttura. Questa funzione formatta anche il foglio `Leads` con intestazioni, filtri, colonne larghe e colori per stato. In seguito il riepilogo viene aggiornato quando la dashboard legge o aggiorna i lead.
 
 ## Colonne consigliate
 
@@ -39,7 +39,7 @@ Le colonne `status`, `notes`, `updatedAt` e `whatsappCount` vengono create dallo
 
 ## WhatsApp
 
-Il pulsante apre `wa.me` usando il numero del lead. Quando clicchi su `Scrivi su WhatsApp`, il lead viene segnato come `Contattato` o come lo stato equivalente configurato.
+Il pulsante apre `wa.me` usando il numero del lead. Quando clicchi su `Scrivi su WhatsApp`, il lead viene prima segnato come `Contattato` o come lo stato equivalente configurato, poi viene aperto WhatsApp.
 
 La dashboard supporta due messaggi predefiniti:
 
