@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>LeadDesk - Gestione Lead</title>
-    <link rel="stylesheet" href="./styles.css?v=20260610-configsync" />
+    <link rel="stylesheet" href="./styles.css?v=20260610-cardui" />
   </head>
   <body>
     <div class="app-shell">
@@ -76,19 +76,25 @@
 
     <template id="leadCardTemplate">
       <article class="lead-card">
-        <button class="lead-summary" type="button">
-          <span class="lead-status"></span>
-          <span>
+        <div class="lead-summary">
+          <button class="lead-toggle" type="button">
+            <span class="lead-status"></span>
+            <span>
             <strong class="lead-name"></strong>
             <small class="lead-meta"></small>
-          </span>
-          <span class="lead-campaign"></span>
-          <span class="expand-icon">+</span>
-        </button>
+            </span>
+            <span class="lead-campaign"></span>
+          </button>
+          <div class="lead-quick-actions">
+            <select class="quick-status" aria-label="Stato lead"></select>
+            <a class="whatsapp compact-whatsapp" href="#" target="_blank" rel="noopener">WhatsApp</a>
+            <button class="expand-icon" type="button" aria-label="Espandi lead">+</button>
+          </div>
+        </div>
         <div class="lead-expanded"></div>
       </article>
     </template>
 
-    <script src="./app.js?v=20260610-configsync"></script>
+    <script src="./app.js?v=20260610-cardui"></script>
   </body>
 </html>

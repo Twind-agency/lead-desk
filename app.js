@@ -93,7 +93,7 @@ const els = {
 
 let state = loadState();
 let settings = loadSettings();
-let selectedId = state.leads[0]?.id || null;
+let selectedId = null;
 let refreshTimer = null;
 let autosaveTimers = {};
 let activeEditUntil = 0;
@@ -265,7 +265,10 @@ function renderList() {
   leads.forEach((lead) => {
     const node = template.content.cloneNode(true);
     const card = node.querySelector(".lead-card");
-    const summary = node.querySelector(".lead-summary");
+    const toggle = node.querySelector(".lead-toggle");
+    const expandButton = node.querySelector(".expand-icon");
+    const quickStatus = node.querySelector(".quick-status");
+    const quickWhatsapp = node.querySelector(".compact-whatsapp");
     const expanded = node.querySelector(".lead-expanded");
     const tone = getStatusTone(lead.status);
 
@@ -276,11 +279,30 @@ function renderList() {
     node.querySelector(".lead-name").textContent = lead.name;
     node.querySelector(".lead-meta").textContent = `${formatDate(lead.createdAt)} - ${lead.phone}`;
     node.querySelector(".lead-campaign").textContent = lead.campaign;
-    node.querySelector(".expand-icon").textContent = lead.id === selectedId ? "-" : "+";
+    expandButton.textContent = lead.id === selectedId ? "-" : "+";
+    quickWhatsapp.href = buildWhatsappUrl(lead);
+    quickStatus.innerHTML = settings.statuses
+      .map((status) => `<option value="${escapeHtml(status)}" ${status === lead.status ? "selected" : ""}>${escapeHtml(status)}</option>`)
+      .join("");
 
-    summary.addEventListener("click", () => {
+    const toggleExpanded = () => {
       selectedId = selectedId === lead.id ? null : lead.id;
       render();
+    };
+
+    toggle.addEventListener("click", toggleExpanded);
+    expandButton.addEventListener("click", toggleExpanded);
+    quickStatus.addEventListener("change", () => updateLeadFromClosedCard(lead.id, card, quickStatus.value));
+    quickWhatsapp.addEventListener("click", async (event) => {
+      event.preventDefault();
+      const url = quickWhatsapp.href;
+      const popup = window.open("about:blank", "_blank", "noopener");
+      await markLeadContactedFromCard(lead.id, card);
+      if (popup) {
+        popup.location.href = url;
+      } else {
+        window.location.href = url;
+      }
     });
 
     if (lead.id === selectedId) {
@@ -293,8 +315,6 @@ function renderList() {
 }
 
 function renderExpanded(lead) {
-  const firstMessage = Number(lead.whatsappCount || 0) === 0;
-  const whatsappUrl = buildWhatsappUrl(lead);
   return `
     <div class="detail-grid">
       ${field("Telefono", lead.phone)}
@@ -307,31 +327,12 @@ function renderExpanded(lead) {
 
     ${renderDynamicFields(lead)}
 
-    <div class="inline-form">
-      <label>
-        <span>Stato lead</span>
-        <select data-role="status">
-          ${settings.statuses
-            .map((status) => `<option value="${escapeHtml(status)}" ${status === lead.status ? "selected" : ""}>${escapeHtml(status)}</option>`)
-            .join("")}
-        </select>
-      </label>
-      <label>
-        <span>Messaggio da usare</span>
-        <select data-role="message-kind">
-          <option value="first" ${firstMessage ? "selected" : ""}>Primo messaggio</option>
-          <option value="followup" ${firstMessage ? "" : "selected"}>Follow-up</option>
-        </select>
-      </label>
-    </div>
-
     <label>
       <span>Note interne</span>
       <textarea data-role="notes" rows="5" placeholder="Aggiungi note, prossimi step, preferenze...">${escapeHtml(lead.notes || "")}</textarea>
     </label>
 
     <div class="actions">
-      <a class="whatsapp" data-role="whatsapp" href="${whatsappUrl}" target="_blank" rel="noopener">Scrivi su WhatsApp</a>
       <span class="notice" data-role="notice">Salvataggio automatico attivo</span>
     </div>`;
 }
@@ -371,46 +372,13 @@ function getDynamicValue(lead, key) {
 }
 
 function attachExpandedEvents(container, id) {
-  const status = container.querySelector('[data-role="status"]');
   const notes = container.querySelector('[data-role="notes"]');
-  const messageKind = container.querySelector('[data-role="message-kind"]');
-  const whatsapp = container.querySelector('[data-role="whatsapp"]');
   const notice = container.querySelector('[data-role="notice"]');
-
-  const updateWhatsappHref = () => {
-    const lead = readLeadDraft(id, container);
-    whatsapp.href = buildWhatsappUrl(lead, messageKind.value);
-  };
-
-  status.addEventListener("change", () => {
-    activeEditUntil = Date.now() + 4000;
-    notice.textContent = "Salvataggio...";
-    const card = container.closest(".lead-card");
-    const badge = card?.querySelector(".lead-status");
-    if (card) card.dataset.statusTone = getStatusTone(status.value);
-    if (badge) badge.textContent = status.value;
-    updateLocalLead(id, container);
-    renderMetrics();
-    updateWhatsappHref();
-    scheduleAutosave(id, container, 150);
-  });
   notes.addEventListener("input", () => {
     activeEditUntil = Date.now() + 4000;
     notice.textContent = "Salvataggio...";
     updateLocalLead(id, container);
     scheduleAutosave(id, container, 900);
-  });
-  messageKind.addEventListener("change", updateWhatsappHref);
-  whatsapp.addEventListener("click", async (event) => {
-    event.preventDefault();
-    const url = whatsapp.href;
-    const popup = window.open("about:blank", "_blank", "noopener");
-    await markLeadContacted(id, container);
-    if (popup) {
-      popup.location.href = url;
-    } else {
-      window.location.href = url;
-    }
   });
 }
 
@@ -419,9 +387,42 @@ function readLeadDraft(id, container) {
   if (!lead) return null;
   return {
     ...lead,
-    status: container.querySelector('[data-role="status"]').value,
+    status: lead.status,
     notes: container.querySelector('[data-role="notes"]').value,
   };
+}
+
+async function updateLeadFromClosedCard(id, card, status) {
+  const lead = state.leads.find((item) => item.id === id);
+  if (!lead) return;
+  lead.status = status;
+  lead.updatedAt = new Date().toISOString();
+  persist();
+  activeEditUntil = Date.now() + 4000;
+  paintCardStatus(card, status);
+  renderMetrics();
+  await saveLeadObject(lead);
+}
+
+async function markLeadContactedFromCard(id, card) {
+  const lead = state.leads.find((item) => item.id === id);
+  if (!lead) return;
+  lead.status = getContactedStatus();
+  lead.whatsappCount = Number(lead.whatsappCount || 0) + 1;
+  lead.updatedAt = new Date().toISOString();
+  persist();
+  activeEditUntil = Date.now() + 4000;
+  const quickStatus = card.querySelector(".quick-status");
+  if (quickStatus) quickStatus.value = lead.status;
+  paintCardStatus(card, lead.status);
+  renderMetrics();
+  await saveLeadObject(lead);
+}
+
+function paintCardStatus(card, status) {
+  const badge = card?.querySelector(".lead-status");
+  if (card) card.dataset.statusTone = getStatusTone(status);
+  if (badge) badge.textContent = status;
 }
 
 function updateLocalLead(id, container) {
@@ -478,10 +479,15 @@ async function saveLead(id, container, successMessage) {
   if (!lead) return;
   const notice = container.querySelector('[data-role="notice"]');
   notice.textContent = successMessage;
+  await saveLeadObject(lead, notice);
 
+  renderMetrics();
+}
+
+async function saveLeadObject(lead, notice) {
   if (settings.endpoint) {
     try {
-      pendingUpdates[id] = { ...lead, pendingAt: Date.now() };
+      pendingUpdates[lead.id] = { ...lead, pendingAt: Date.now() };
       const params = new URLSearchParams({
         action: "updateLead",
         payload: JSON.stringify({ lead }),
@@ -489,16 +495,14 @@ async function saveLead(id, container, successMessage) {
       const response = await fetch(`${settings.endpoint}?${params.toString()}`);
       const result = await response.json();
       if (!result.ok) throw new Error(result.error || "Update failed");
-      notice.textContent = "Inviato al Google Sheet";
+      if (notice) notice.textContent = "Inviato al Google Sheet";
       window.setTimeout(() => refreshLeads(true), 500);
     } catch (error) {
-      notice.textContent = "Salvato localmente, invio non riuscito";
+      if (notice) notice.textContent = "Salvato localmente, invio non riuscito";
     }
   } else {
-    notice.textContent = "Salvato localmente";
+    if (notice) notice.textContent = "Salvato localmente";
   }
-
-  renderMetrics();
 }
 
 function scheduleAutosave(id, container, delay) {
@@ -522,7 +526,7 @@ async function refreshLeads(silent = false) {
     if (Array.isArray(data.leads)) {
       const previousSelected = selectedId;
       state.leads = mergePendingUpdates(data.leads.map((lead) => ({ whatsappCount: 0, ...lead })));
-      selectedId = state.leads.some((lead) => lead.id === previousSelected) ? previousSelected : state.leads[0]?.id || null;
+      selectedId = silent ? null : state.leads.some((lead) => lead.id === previousSelected) ? previousSelected : null;
       persist();
     }
   } catch {
