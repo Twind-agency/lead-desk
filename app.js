@@ -96,7 +96,6 @@ let selectedId = state.leads[0]?.id || null;
 let refreshTimer = null;
 let autosaveTimers = {};
 let activeEditUntil = 0;
-let pendingUpdates = {};
 
 function loadState() {
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -423,14 +422,12 @@ async function saveLead(id, container, successMessage) {
 
   if (settings.endpoint) {
     try {
-      pendingUpdates[id] = { ...lead, pendingAt: Date.now() };
-      const params = new URLSearchParams({
-        action: "updateLead",
-        payload: JSON.stringify({ lead }),
+      await fetch(settings.endpoint, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "updateLead", lead }),
       });
-      const response = await fetch(`${settings.endpoint}?${params.toString()}`);
-      const result = await response.json();
-      if (!result.ok) throw new Error(result.error || "Update failed");
       notice.textContent = "Inviato al Google Sheet";
     } catch (error) {
       notice.textContent = "Salvato localmente, invio non riuscito";
@@ -462,7 +459,7 @@ async function refreshLeads(silent = false) {
     const data = await response.json();
     if (Array.isArray(data.leads)) {
       const previousSelected = selectedId;
-      state.leads = mergePendingUpdates(data.leads.map((lead) => ({ whatsappCount: 0, ...lead })));
+      state.leads = data.leads.map((lead) => ({ whatsappCount: 0, ...lead }));
       selectedId = state.leads.some((lead) => lead.id === previousSelected) ? previousSelected : state.leads[0]?.id || null;
       persist();
     }
@@ -472,27 +469,6 @@ async function refreshLeads(silent = false) {
     if (!silent) els.refreshBtn.textContent = "Aggiorna";
     render();
   }
-}
-
-function mergePendingUpdates(sheetLeads) {
-  const now = Date.now();
-  return sheetLeads.map((sheetLead) => {
-    const pending = pendingUpdates[sheetLead.id];
-    if (!pending) return sheetLead;
-
-    const sheetMatchesPending = sheetLead.status === pending.status && String(sheetLead.notes || "") === String(pending.notes || "");
-    if (sheetMatchesPending) {
-      delete pendingUpdates[sheetLead.id];
-      return sheetLead;
-    }
-
-    if (now - pending.pendingAt < 30000) {
-      return { ...sheetLead, ...pending };
-    }
-
-    delete pendingUpdates[sheetLead.id];
-    return sheetLead;
-  });
 }
 
 function startRealtimeSync() {
