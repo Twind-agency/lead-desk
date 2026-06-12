@@ -1,15 +1,17 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap");
+
 :root {
-  --bg: #eef3f8;
+  --bg: #f4f6fb;
   --panel: #ffffff;
-  --ink: #122033;
-  --muted: #65758b;
-  --line: #d8e1ec;
-  --accent: #0ea5e9;
-  --accent-dark: #0369a1;
+  --ink: #17213f;
+  --muted: #8b93a7;
+  --line: #e4e8f2;
+  --accent: #5967e8;
+  --accent-dark: #4352d8;
   --warn: #b45309;
-  --ok: #0284c7;
+  --ok: #14b8d4;
   --danger: #b91c1c;
-  --shadow: 0 12px 32px rgba(15, 23, 42, 0.09);
+  --shadow: 0 18px 42px rgba(45, 55, 94, 0.08);
 }
 
 * {
@@ -18,14 +20,11 @@
 
 body {
   margin: 0;
-  background:
-    radial-gradient(circle at top left, rgba(14, 165, 233, 0.22), transparent 32%),
-    linear-gradient(135deg, #2563eb 0%, #0f172a 100%);
+  background: var(--bg);
   color: var(--ink);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Nunito Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   line-height: 1.4;
   min-height: 100vh;
-  padding: 34px;
 }
 
 button,
@@ -40,25 +39,20 @@ button {
 }
 
 .app-shell {
-  background: #f3f6fb;
-  border: 1px solid rgba(255, 255, 255, 0.34);
-  border-radius: 34px;
-  box-shadow: 0 34px 80px rgba(15, 23, 42, 0.28);
   display: grid;
   grid-template-columns: 260px 1fr;
-  margin: 0 auto;
-  max-width: 1480px;
-  min-height: calc(100vh - 68px);
+  min-height: 100vh;
   overflow: hidden;
 }
 
 .sidebar {
-  background: #0f172a;
-  color: #eef6ff;
+  background: #f7f8fd;
+  border-right: 1px solid #e3e7f1;
+  color: var(--ink);
   display: flex;
   flex-direction: column;
   gap: 28px;
-  padding: 34px 24px;
+  padding: 46px 24px 30px;
 }
 
 .brand {
@@ -69,9 +63,10 @@ button {
 
 .brand-mark {
   align-items: center;
-  background: #dff4ff;
+  background: #ffffff;
+  box-shadow: 0 14px 28px rgba(45, 55, 94, 0.1);
   border-radius: 8px;
-  color: #075985;
+  color: var(--accent);
   display: inline-flex;
   font-weight: 800;
   height: 42px;
@@ -81,7 +76,7 @@ button {
 
 .brand small,
 .sync-card small {
-  color: #b8c7db;
+  color: var(--muted);
   display: block;
   margin-top: 2px;
 }
@@ -93,22 +88,27 @@ nav {
 
 nav a {
   border-radius: 8px;
-  color: #dce6e2;
-  font-weight: 700;
+  color: #9aa1b4;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
   padding: 12px 14px;
   text-decoration: none;
+  text-transform: uppercase;
 }
 
 nav a.active,
 nav a:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: #eef1ff;
+  color: var(--ink);
 }
 
 .sync-card {
   align-items: center;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #ffffff;
+  border: 1px solid #e7ebf4;
   border-radius: 8px;
+  box-shadow: 0 16px 34px rgba(45, 55, 94, 0.08);
   display: flex;
   gap: 10px;
   margin-top: auto;
@@ -127,10 +127,10 @@ nav a:hover {
 }
 
 main {
-  background: #f4f7fc;
+  background: #f2f4fb;
   display: grid;
   gap: 24px;
-  padding: 44px 48px;
+  padding: 52px 58px;
 }
 
 .topbar,
@@ -149,11 +149,13 @@ p {
 
 h1 {
   font-size: 34px;
+  font-weight: 900;
   letter-spacing: 0;
 }
 
 h2 {
   font-size: 20px;
+  font-weight: 900;
 }
 
 p {
@@ -165,7 +167,7 @@ p {
 .whatsapp {
   border: 0;
   border-radius: 8px;
-  font-weight: 700;
+  font-weight: 900;
   min-height: 42px;
   padding: 10px 14px;
 }
@@ -199,7 +201,8 @@ p {
 }
 
 .secondary {
-  background: #e8eef7;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(45, 55, 94, 0.08);
   color: var(--ink);
 }
 
@@ -218,11 +221,11 @@ p {
 
 .metrics article {
   background:
-    linear-gradient(135deg, rgba(37, 99, 235, 0.94), rgba(14, 165, 233, 0.88)),
+    linear-gradient(135deg, rgba(89, 103, 232, 0.96), rgba(20, 184, 212, 0.82)),
     var(--panel);
   border: 0;
   border-radius: 8px;
-  box-shadow: 0 16px 32px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 18px 36px rgba(89, 103, 232, 0.2);
   color: #ffffff;
   min-height: 78px;
   padding: 16px 22px;
@@ -233,6 +236,7 @@ label span {
   color: var(--muted);
   display: block;
   font-size: 13px;
+  font-weight: 800;
   margin-bottom: 6px;
 }
 
@@ -250,10 +254,10 @@ label span {
 }
 
 .toolbar {
-  background: rgba(255, 255, 255, 0.76);
-  border: 1px solid rgba(216, 225, 236, 0.8);
+  background: #ffffff;
+  border: 1px solid #edf0f7;
   border-radius: 8px;
-  box-shadow: 0 14px 38px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--shadow);
   display: grid;
   gap: 12px;
   grid-template-columns: 1fr 220px;
@@ -263,8 +267,8 @@ label span {
 input,
 select,
 textarea {
-  background: #fff;
-  border: 1px solid var(--line);
+  background: #fbfcff;
+  border: 1px solid #e1e6f0;
   border-radius: 8px;
   color: var(--ink);
   min-height: 42px;
@@ -277,8 +281,8 @@ textarea {
 }
 
 .workspace {
-  background: #f8fafc;
-  border: 1px solid rgba(227, 234, 243, 0.92);
+  background: #f7f8fc;
+  border: 1px solid #e7ebf4;
   border-radius: 8px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
   min-height: 520px;
@@ -293,10 +297,10 @@ textarea {
 
 .lead-card {
   background: var(--panel);
-  border: 1px solid rgba(216, 225, 236, 0.86);
+  border: 1px solid #edf0f7;
   border-left: 14px solid #0f766e;
   border-radius: 8px;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 14px 32px rgba(45, 55, 94, 0.07);
   color: var(--ink);
   overflow: hidden;
 }
@@ -304,7 +308,7 @@ textarea {
 .lead-card:hover,
 .lead-card.selected {
   border-color: var(--accent);
-  box-shadow: var(--shadow);
+  box-shadow: 0 20px 44px rgba(45, 55, 94, 0.12);
 }
 
 .lead-summary {
@@ -364,10 +368,10 @@ textarea {
 
 .expand-icon {
   align-items: center;
-  background: #e0f2fe;
+  background: #eef1ff;
   border: 0;
   border-radius: 6px;
-  color: #075985;
+  color: var(--accent);
   display: inline-flex;
   font-size: 20px;
   font-weight: 800;
@@ -387,8 +391,8 @@ textarea {
 }
 
 .lead-status {
-  background: #e0f2fe;
-  color: #075985;
+  background: #eef1ff;
+  color: var(--accent);
 }
 
 .lead-card[data-status-tone="new"] .lead-status {
@@ -484,8 +488,8 @@ textarea {
 }
 
 .dynamic-fields {
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(101, 117, 139, 0.18);
+  background: #fbfcff;
+  border: 1px solid #e7ebf4;
   border-radius: 8px;
   display: grid;
   gap: 12px;
