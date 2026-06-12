@@ -98,6 +98,7 @@ let refreshTimer = null;
 let autosaveTimers = {};
 let activeEditUntil = 0;
 let pendingUpdates = {};
+let keepOpenUntil = 0;
 
 function loadState() {
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -288,6 +289,7 @@ function renderList() {
 
     const toggleExpanded = () => {
       selectedId = selectedId === lead.id ? null : lead.id;
+      keepOpenUntil = selectedId ? Date.now() + 120000 : 0;
       render();
     };
 
@@ -377,6 +379,7 @@ function attachExpandedEvents(container, id) {
   const notice = container.querySelector('[data-role="notice"]');
   notes.addEventListener("input", () => {
     activeEditUntil = Date.now() + 4000;
+    keepOpenUntil = Date.now() + 120000;
     notice.textContent = "Salvataggio...";
     updateLocalLead(id, container);
     scheduleAutosave(id, container, 900);
@@ -396,6 +399,7 @@ function readLeadDraft(id, container) {
 async function updateLeadFromClosedCard(id, card, status) {
   const lead = state.leads.find((item) => item.id === id);
   if (!lead) return;
+  keepOpenUntil = selectedId === id ? Date.now() + 120000 : keepOpenUntil;
   lead.status = status;
   lead.updatedAt = new Date().toISOString();
   persist();
@@ -408,6 +412,7 @@ async function updateLeadFromClosedCard(id, card, status) {
 async function markLeadContactedFromCard(id, card) {
   const lead = state.leads.find((item) => item.id === id);
   if (!lead) return;
+  keepOpenUntil = selectedId === id ? Date.now() + 120000 : keepOpenUntil;
   lead.status = getContactedStatus();
   lead.whatsappCount = Number(lead.whatsappCount || 0) + 1;
   lead.updatedAt = new Date().toISOString();
@@ -533,7 +538,7 @@ async function refreshLeads(silent = false) {
     if (Array.isArray(data.leads)) {
       const previousSelected = selectedId;
       state.leads = mergePendingUpdates(data.leads.map((lead) => ({ whatsappCount: 0, ...lead })));
-      selectedId = silent ? null : state.leads.some((lead) => lead.id === previousSelected) ? previousSelected : null;
+      selectedId = shouldKeepLeadOpen(silent, previousSelected) && state.leads.some((lead) => lead.id === previousSelected) ? previousSelected : null;
       persist();
     }
   } catch {
@@ -542,6 +547,12 @@ async function refreshLeads(silent = false) {
     if (!silent) els.refreshBtn.textContent = "Aggiorna";
     render();
   }
+}
+
+function shouldKeepLeadOpen(silent, previousSelected) {
+  if (!previousSelected) return false;
+  if (!silent) return true;
+  return Date.now() < keepOpenUntil || Date.now() < activeEditUntil;
 }
 
 function mergePendingUpdates(sheetLeads) {
