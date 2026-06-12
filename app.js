@@ -299,13 +299,12 @@ function renderList() {
     quickWhatsapp.addEventListener("click", async (event) => {
       event.preventDefault();
       const url = quickWhatsapp.href;
-      const popup = window.open("about:blank", "_blank", "noopener");
-      await markLeadContactedFromCard(lead.id, card);
-      if (popup) {
-        popup.location.href = url;
+      if (Number(lead.whatsappCount || 0) === 0) {
+        await markLeadContactedFromCard(lead.id, card);
       } else {
-        window.location.href = url;
+        await registerWhatsappFollowUpFromCard(lead.id, card);
       }
+      window.open(url, "_blank", "noopener");
     });
 
     if (lead.id === selectedId) {
@@ -421,7 +420,19 @@ async function markLeadContactedFromCard(id, card) {
   const quickStatus = card.querySelector(".quick-status");
   if (quickStatus) quickStatus.value = lead.status;
   paintCardStatus(card, lead.status);
+  updateWhatsappButtonLabel(card, lead);
   renderMetrics();
+  await saveLeadObject(lead);
+}
+
+async function registerWhatsappFollowUpFromCard(id, card) {
+  const lead = state.leads.find((item) => item.id === id);
+  if (!lead) return;
+  lead.whatsappCount = Number(lead.whatsappCount || 0) + 1;
+  lead.updatedAt = new Date().toISOString();
+  persist();
+  activeEditUntil = Date.now() + 4000;
+  updateWhatsappButtonLabel(card, lead);
   await saveLeadObject(lead);
 }
 
@@ -429,6 +440,13 @@ function paintCardStatus(card, status) {
   const badge = card?.querySelector(".lead-status");
   if (card) card.dataset.statusTone = getStatusTone(status);
   if (badge) badge.textContent = status;
+}
+
+function updateWhatsappButtonLabel(card, lead) {
+  const button = card?.querySelector(".compact-whatsapp");
+  if (button) {
+    button.innerHTML = `${whatsappIcon()}${Number(lead.whatsappCount || 0) > 0 ? "Riscrivi su WhatsApp" : "Scrivi su WhatsApp"}`;
+  }
 }
 
 function updateLocalLead(id, container) {
