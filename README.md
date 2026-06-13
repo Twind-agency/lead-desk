@@ -46,11 +46,23 @@ La dashboard supporta due messaggi predefiniti:
 - primo messaggio
 - follow-up per i contatti successivi
 
-I testi possono essere modificati nella sezione `Google Sheet`, insieme ai nomi degli stati lead. Nei messaggi puoi usare queste variabili:
+I testi possono essere modificati nella sezione `Google Sheet`, insieme ai nomi degli stati lead. Nei messaggi puoi usare le variabili standard:
 
 - `{{nome}}`
 - `{{campagna}}`
 - `{{interesse}}`
+
+Puoi anche usare qualunque colonna del Google Sheet o campo dinamico configurato, scrivendo il nome tra doppie graffe.
+
+Esempio:
+
+`{{Nome Struttura}}`
+
+`{{Tipo di struttura}}`
+
+`{{Accetta già animali}}`
+
+`{{quale problema riscontri}}`
 
 ## Campi dinamici del form Meta
 

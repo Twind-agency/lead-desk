@@ -63,6 +63,10 @@ Dopo che arriva almeno un lead puoi usare `Rileva campi dal foglio` per proporre
 
 Quando salvi la configurazione, Apps Script crea le colonne dinamiche mancanti nel foglio `Leads` e salva una copia della configurazione nel foglio `Config`.
 
+I campi dinamici possono essere usati anche nei template WhatsApp, scrivendo il nome colonna tra doppie graffe:
+
+`{{Nome Struttura}}`
+
 ## Deploy su Netlify
 
 1. Vai su Netlify.

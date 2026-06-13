@@ -475,11 +475,59 @@ function escapeHtml(value) {
 function buildWhatsappUrl(lead, forcedKind) {
   const kind = forcedKind || (Number(lead.whatsappCount || 0) === 0 ? "first" : "followup");
   const template = kind === "followup" ? settings.followUpTemplate : settings.firstTemplate;
-  const text = template
-    .replaceAll("{{nome}}", lead.name || "")
-    .replaceAll("{{campagna}}", lead.campaign || "")
-    .replaceAll("{{interesse}}", lead.interest || "");
+  const text = template.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (_match, key) => getWhatsappVariableValue(lead, key));
   return `https://wa.me/${normalizePhone(lead.phone)}?text=${encodeURIComponent(text)}`;
+}
+
+function getWhatsappVariableValue(lead, key) {
+  const normalizedKey = normalizeVariableKey(key);
+  const standardValues = {
+    nome: lead.name || "",
+    name: lead.name || "",
+    telefono: lead.phone || "",
+    phone: lead.phone || "",
+    email: lead.email || "",
+    campagna: lead.campaign || "",
+    campaign: lead.campaign || "",
+    interesse: lead.interest || "",
+    interest: lead.interest || "",
+    citta: lead.city || "",
+    città: lead.city || "",
+    city: lead.city || "",
+    fonte: lead.source || "",
+    source: lead.source || "",
+    stato: lead.status || "",
+    status: lead.status || "",
+  };
+
+  if (Object.prototype.hasOwnProperty.call(standardValues, normalizedKey)) {
+    return standardValues[normalizedKey];
+  }
+
+  const raw = lead._raw || {};
+  const rawKey = Object.keys(raw).find((item) => normalizeVariableKey(item) === normalizedKey);
+  if (rawKey && raw[rawKey] !== undefined && raw[rawKey] !== null) {
+    return raw[rawKey];
+  }
+
+  const dynamicField = normalizeDynamicFields(settings.dynamicFields).find((field) => {
+    return normalizeVariableKey(field.key) === normalizedKey || normalizeVariableKey(field.label) === normalizedKey;
+  });
+  if (dynamicField) {
+    return getDynamicValue(lead, dynamicField.key);
+  }
+
+  return "";
+}
+
+function normalizeVariableKey(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ");
 }
 
 function whatsappIcon() {
